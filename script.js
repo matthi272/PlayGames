@@ -68,12 +68,12 @@ function handlePlayerMove(event) {
 
 function botMove() {
   if (!gameActive) return;
-  const availableMoves = boardState
-    .map((value, index) => (value === '' ? index : null))
-    .filter((value) => value !== null);
 
-  const randomIndex = availableMoves[Math.floor(Math.random() * availableMoves.length)];
-  updateCell(randomIndex, botSymbol);
+  const { index } = findBestMove(boardState, botSymbol);
+  const moveIndex =
+    index !== null ? index : boardState.findIndex((cell) => cell === '');
+
+  updateCell(moveIndex, botSymbol);
 
   if (checkWinner(botSymbol)) {
     highlightWinningCells(botSymbol);
@@ -108,9 +108,9 @@ const winningCombos = [
   [2, 4, 6],
 ];
 
-function checkWinner(symbol) {
+function checkWinner(symbol, state = boardState) {
   return winningCombos.some((combo) =>
-    combo.every((index) => boardState[index] === symbol)
+    combo.every((index) => state[index] === symbol)
   );
 }
 
@@ -128,6 +128,60 @@ function highlightWinningCells(symbol) {
 function endTicTacToe(message) {
   gameActive = false;
   ticTacToeStatus.textContent = message;
+}
+
+function findBestMove(state, currentPlayer) {
+  let bestScore = -Infinity;
+  let bestMove = null;
+
+  state.forEach((cell, index) => {
+    if (cell !== '') return;
+
+    const newState = [...state];
+    newState[index] = currentPlayer;
+    const score = minimax(newState, 0, false);
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = index;
+    }
+  });
+
+  return { index: bestMove, score: bestScore };
+}
+
+function minimax(state, depth, isMaximizing) {
+  if (checkWinner(botSymbol, state)) {
+    return 10 - depth;
+  }
+  if (checkWinner(playerSymbol, state)) {
+    return depth - 10;
+  }
+  if (state.every((cell) => cell !== '')) {
+    return 0;
+  }
+
+  if (isMaximizing) {
+    let bestScore = -Infinity;
+    for (let i = 0; i < state.length; i += 1) {
+      if (state[i] !== '') continue;
+      state[i] = botSymbol;
+      const score = minimax(state, depth + 1, false);
+      state[i] = '';
+      bestScore = Math.max(bestScore, score);
+    }
+    return bestScore;
+  }
+
+  let bestScore = Infinity;
+  for (let i = 0; i < state.length; i += 1) {
+    if (state[i] !== '') continue;
+    state[i] = playerSymbol;
+    const score = minimax(state, depth + 1, true);
+    state[i] = '';
+    bestScore = Math.min(bestScore, score);
+  }
+  return bestScore;
 }
 
 ticTacToeRestart.addEventListener('click', createTicTacToeBoard);
@@ -196,6 +250,7 @@ numberGuessRestart.addEventListener('click', resetNumberGuess);
 const memoryBoard = document.querySelector('.memory-board');
 const matchesSpan = document.querySelector('#memory-match .matches span');
 const movesSpan = document.querySelector('#memory-match .moves span');
+const memoryStatus = document.querySelector('#memory-match .memory-status');
 const memoryRestart = document.querySelector('.restart[data-game="memory-match"]');
 const icons = ['🚀', '🪐', '☄️', '👾', '🌌', '🛰️', '🌠', '🛸'];
 let firstCard = null;
@@ -210,6 +265,8 @@ function createMemoryBoard() {
   moves = 0;
   matchesSpan.textContent = matches;
   movesSpan.textContent = moves;
+  memoryStatus.className = 'memory-status';
+  memoryStatus.textContent = 'Finde passende Meteore!';
   memoryBoard.innerHTML = '';
 
   cardValues.forEach((icon, index) => {
@@ -217,6 +274,7 @@ function createMemoryBoard() {
     card.className = 'memory-card';
     card.type = 'button';
     card.dataset.icon = icon;
+    card.disabled = false;
     card.innerHTML = `
       <div class="memory-card-inner">
         <div class="memory-card-face front">${icon}</div>
@@ -263,19 +321,26 @@ function checkForMatch() {
   if (isMatch) {
     handleMatch();
   } else {
+    memoryStatus.className = 'memory-status warning';
+    memoryStatus.textContent = 'Nicht ganz – versuch es nochmal!';
     setTimeout(unflipCards, 900);
   }
 }
 
 function handleMatch() {
-  firstCard.classList.add('matched');
-  secondCard.classList.add('matched');
+  [firstCard, secondCard].forEach((card) => {
+    card.classList.add('matched');
+    card.disabled = true;
+  });
   matches += 1;
   matchesSpan.textContent = matches;
-  if (matches === icons.length) {
-    setTimeout(() => {
-      alert(`Du hast alle Paare gefunden! Benötigte Züge: ${moves}.`);
-    }, 400);
+  const remaining = icons.length - matches;
+  if (remaining > 0) {
+    memoryStatus.className = 'memory-status success';
+    memoryStatus.textContent = `Treffer! Noch ${remaining} ${remaining === 1 ? 'Paar' : 'Paare'} übrig.`;
+  } else {
+    memoryStatus.className = 'memory-status success';
+    memoryStatus.textContent = `Sternenregen! Du hast alle Paare in ${moves} Zügen gefunden.`;
   }
   resetTurn();
 }
@@ -283,6 +348,8 @@ function handleMatch() {
 function unflipCards() {
   firstCard.classList.remove('flipped');
   secondCard.classList.remove('flipped');
+  memoryStatus.className = 'memory-status';
+  memoryStatus.textContent = 'Weiter geht die Meteorenjagd!';
   resetTurn();
 }
 
@@ -307,5 +374,142 @@ restartButtons.forEach((button) => {
     if (target === 'memory-match') {
       createMemoryBoard();
     }
+    if (target === 'akinator') {
+      startAkinator();
+    }
   });
 });
+
+// Akinator
+const akinatorQuestionEl = document.querySelector('.akinator-question');
+const akinatorStatusEl = document.querySelector('.akinator-status');
+const akinatorAnswerButtons = document.querySelectorAll('.akinator-answer');
+
+const akinatorQuestions = [
+  { key: 'isHuman', text: 'Ist deine Figur ein Mensch?' },
+  { key: 'usesMagic', text: 'Verwendet deine Figur kosmische Magie?' },
+  { key: 'isRobot', text: 'Handelt es sich um einen Roboter oder eine KI?' },
+  { key: 'isVillain', text: 'Ist deine Figur eher böse eingestellt?' },
+  { key: 'hasSpaceship', text: 'Besitzt deine Figur ein eigenes Raumschiff?' },
+];
+
+const akinatorCharacters = [
+  {
+    name: 'Luna, die Sternenpiratin',
+    traits: { isHuman: true, usesMagic: false, isRobot: false, isVillain: true, hasSpaceship: true },
+  },
+  {
+    name: 'Orion, der Galaxienhüter',
+    traits: { isHuman: true, usesMagic: true, isRobot: false, isVillain: false, hasSpaceship: false },
+  },
+  {
+    name: 'XR-77, der Astro-Droide',
+    traits: { isHuman: false, usesMagic: false, isRobot: true, isVillain: false, hasSpaceship: true },
+  },
+  {
+    name: 'Nyra, die Nebelhexe',
+    traits: { isHuman: false, usesMagic: true, isRobot: false, isVillain: true, hasSpaceship: false },
+  },
+  {
+    name: 'Captain Sol, der Lichtpilot',
+    traits: { isHuman: true, usesMagic: false, isRobot: false, isVillain: false, hasSpaceship: true },
+  },
+];
+
+let akinatorRemaining = [];
+let akinatorQuestionIndex = 0;
+let akinatorAwaitingConfirmation = false;
+let akinatorCurrentGuess = null;
+
+function startAkinator() {
+  akinatorRemaining = [...akinatorCharacters];
+  akinatorQuestionIndex = 0;
+  akinatorAwaitingConfirmation = false;
+  akinatorCurrentGuess = null;
+  akinatorStatusEl.textContent =
+    'Denk dir eine Figur aus dem All und beantworte meine Fragen mit Ja, Nein oder Nicht sicher.';
+  akinatorAnswerButtons.forEach((button) => {
+    button.disabled = false;
+  });
+  showNextAkinatorStep();
+}
+
+function showNextAkinatorStep() {
+  if (akinatorRemaining.length === 0) {
+    akinatorQuestionEl.textContent = 'Ich bin ratlos! Welche Figur hattest du im Kopf?';
+    akinatorStatusEl.textContent =
+      'Du hast mich geschlagen – klicke auf "Nochmal versuchen", um es erneut zu probieren!';
+    akinatorAnswerButtons.forEach((button) => {
+      button.disabled = true;
+    });
+    return;
+  }
+
+  if (akinatorRemaining.length === 1 || akinatorQuestionIndex >= akinatorQuestions.length) {
+    akinatorAwaitingConfirmation = true;
+    akinatorCurrentGuess = akinatorRemaining[0];
+    akinatorQuestionEl.textContent = `Ist deine Figur ${akinatorCurrentGuess.name}?`;
+    akinatorStatusEl.textContent = 'Ich wage eine Vermutung … liege ich richtig?';
+    return;
+  }
+
+  const currentQuestion = akinatorQuestions[akinatorQuestionIndex];
+  akinatorQuestionEl.textContent = currentQuestion.text;
+  akinatorStatusEl.textContent = `Ich habe noch ${akinatorRemaining.length} mögliche Figuren im Blick.`;
+}
+
+function handleAkinatorAnswer(answer) {
+  if (akinatorAnswerButtons[0].disabled) {
+    return;
+  }
+
+  if (akinatorAwaitingConfirmation) {
+    const normalized = answer === 'maybe' ? 'no' : answer;
+
+    if (normalized === 'yes') {
+      akinatorStatusEl.textContent = 'Yeah! Ich wusste, dass ich richtig liege. Spiele gerne nochmal!';
+      akinatorAnswerButtons.forEach((button) => {
+        button.disabled = true;
+      });
+      return;
+    }
+
+    akinatorRemaining = akinatorRemaining.filter(
+      (character) => character.name !== akinatorCurrentGuess.name
+    );
+
+    akinatorAwaitingConfirmation = false;
+    akinatorCurrentGuess = null;
+    akinatorQuestionIndex += 1;
+    showNextAkinatorStep();
+    return;
+  }
+
+  const currentQuestion = akinatorQuestions[akinatorQuestionIndex];
+  if (!currentQuestion) {
+    showNextAkinatorStep();
+    return;
+  }
+
+  if (answer === 'yes') {
+    akinatorRemaining = akinatorRemaining.filter(
+      (character) => character.traits[currentQuestion.key] === true
+    );
+  } else if (answer === 'no') {
+    akinatorRemaining = akinatorRemaining.filter((character) => {
+      const trait = character.traits[currentQuestion.key];
+      return trait === false || trait === undefined;
+    });
+  }
+
+  akinatorQuestionIndex += 1;
+  showNextAkinatorStep();
+}
+
+akinatorAnswerButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    handleAkinatorAnswer(button.dataset.answer);
+  });
+});
+
+startAkinator();

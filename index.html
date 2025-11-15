@@ -17,6 +17,7 @@
         <button class="selector-button active" data-target="tic-tac-toe">Galaktisches Tic-Tac-Toe</button>
         <button class="selector-button" data-target="number-guess">Nebula Number Guess</button>
         <button class="selector-button" data-target="memory-match">Meteor Memory Match</button>
+        <button class="selector-button" data-target="akinator">Kosmischer Akinator</button>
       </nav>
 
       <main>
@@ -64,7 +65,25 @@
           <div class="game-info" aria-live="polite">
             <p class="matches">Gefundene Paare: <span>0</span>/8</p>
             <p class="moves">Züge: <span>0</span></p>
+            <p class="memory-status">Finde passende Meteore!</p>
             <button class="restart" data-game="memory-match">Nochmal spielen</button>
+          </div>
+        </section>
+
+        <section id="akinator" class="game" aria-labelledby="akinator-title">
+          <div class="game-header">
+            <h2 id="akinator-title">Kosmischer Akinator</h2>
+            <p>Denk dir eine galaktische Figur aus – ich versuche, sie mit ein paar Fragen zu erraten!</p>
+          </div>
+          <div class="akinator-panel">
+            <p class="akinator-question" aria-live="polite"></p>
+            <div class="akinator-answers" role="group" aria-label="Antworten">
+              <button class="akinator-answer" data-answer="yes">Ja</button>
+              <button class="akinator-answer" data-answer="no">Nein</button>
+              <button class="akinator-answer" data-answer="maybe">Nicht sicher</button>
+            </div>
+            <p class="akinator-status" aria-live="polite"></p>
+            <button class="restart" data-game="akinator">Nochmal versuchen</button>
           </div>
         </section>
       </main>

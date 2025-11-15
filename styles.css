@@ -296,8 +296,71 @@ main {
 }
 
 .matches,
-.moves {
+.moves,
+.memory-status {
   font-weight: 600;
+}
+
+.memory-status {
+  color: var(--muted);
+}
+
+.memory-status.success {
+  color: var(--success);
+}
+
+.memory-status.warning {
+  color: var(--warning);
+}
+
+.akinator-panel {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  text-align: center;
+}
+
+.akinator-question {
+  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+  font-weight: 600;
+}
+
+.akinator-answers {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.akinator-answer {
+  padding: 0.6rem 1.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(127, 90, 240, 0.35);
+  background: rgba(12, 15, 35, 0.85);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+}
+
+.akinator-answer:hover,
+.akinator-answer:focus {
+  background: rgba(127, 90, 240, 0.25);
+  box-shadow: 0 10px 25px rgba(127, 90, 240, 0.25);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.akinator-answer[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.akinator-status {
+  min-height: 2.5rem;
+  color: var(--muted);
 }
 
 footer {
