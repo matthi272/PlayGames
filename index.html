@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PlayGames – Drei galaktische Spiele</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="hero">
+        <h1>PlayGames</h1>
+        <p>Wähle dein Abenteuer und stürz dich in eines von drei galaktisch coolen Spielen!</p>
+      </header>
+
+      <nav class="game-selector" aria-label="Spielauswahl">
+        <button class="selector-button active" data-target="tic-tac-toe">Galaktisches Tic-Tac-Toe</button>
+        <button class="selector-button" data-target="number-guess">Nebula Number Guess</button>
+        <button class="selector-button" data-target="memory-match">Meteor Memory Match</button>
+        <button class="selector-button" data-target="akinator">Kosmischer Akinator</button>
+      </nav>
+
+      <main>
+        <section id="tic-tac-toe" class="game active" aria-labelledby="tic-tac-toe-title">
+          <div class="game-header">
+            <h2 id="tic-tac-toe-title">Galaktisches Tic-Tac-Toe</h2>
+            <p>Setze drei Symbole in eine Reihe, bevor das Computer-Bot deine Pläne durchkreuzt!</p>
+          </div>
+          <div class="tic-tac-toe-board" role="grid" aria-label="Tic Tac Toe Spielfeld">
+            <!-- Felder werden von JavaScript erstellt -->
+          </div>
+          <div class="game-info" aria-live="polite">
+            <p class="status">Du bist am Zug. Wähle ein Feld!</p>
+            <button class="restart" data-game="tic-tac-toe">Neustart</button>
+          </div>
+        </section>
+
+        <section id="number-guess" class="game" aria-labelledby="number-guess-title">
+          <div class="game-header">
+            <h2 id="number-guess-title">Nebula Number Guess</h2>
+            <p>Errate die geheime Zahl zwischen 1 und 100. Jeder Versuch bringt dich der Wahrheit näher!</p>
+          </div>
+          <form class="guess-form" autocomplete="off">
+            <label for="guess-input">Dein Tipp:</label>
+            <div class="input-group">
+              <input id="guess-input" type="number" min="1" max="100" required />
+              <button type="submit">Raten</button>
+            </div>
+          </form>
+          <div class="guess-stats" aria-live="polite">
+            <p class="feedback">Starte das Spiel mit deinem ersten Tipp!</p>
+            <p class="attempts">Versuche: <span>0</span></p>
+          </div>
+          <button class="restart" data-game="number-guess">Neues Spiel</button>
+        </section>
+
+        <section id="memory-match" class="game" aria-labelledby="memory-match-title">
+          <div class="game-header">
+            <h2 id="memory-match-title">Meteor Memory Match</h2>
+            <p>Finde alle Kartenpaare, bevor die Sterne erlöschen. Wie schnell kannst du das Feld räumen?</p>
+          </div>
+          <div class="memory-board" aria-label="Memory Spielbrett">
+            <!-- Karten werden von JavaScript erstellt -->
+          </div>
+          <div class="game-info" aria-live="polite">
+            <p class="matches">Gefundene Paare: <span>0</span>/8</p>
+            <p class="moves">Züge: <span>0</span></p>
+            <p class="memory-status">Finde passende Meteore!</p>
+            <button class="restart" data-game="memory-match">Nochmal spielen</button>
+          </div>
+        </section>
+
+        <section id="akinator" class="game" aria-labelledby="akinator-title">
+          <div class="game-header">
+            <h2 id="akinator-title">Kosmischer Akinator</h2>
+            <p>Denk dir eine galaktische Figur aus – ich versuche, sie mit ein paar Fragen zu erraten!</p>
+          </div>
+          <div class="akinator-panel">
+            <p class="akinator-question" aria-live="polite"></p>
+            <div class="akinator-answers" role="group" aria-label="Antworten">
+              <button class="akinator-answer" data-answer="yes">Ja</button>
+              <button class="akinator-answer" data-answer="no">Nein</button>
+              <button class="akinator-answer" data-answer="maybe">Nicht sicher</button>
+            </div>
+            <p class="akinator-status" aria-live="polite"></p>
+            <button class="restart" data-game="akinator">Nochmal versuchen</button>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <p>Bereit für den nächsten Highscore? Teile deine Ergebnisse mit deinen Freunden!</p>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
